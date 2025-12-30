@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taboo Word Generator</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        h1 { color: #1e293b; margin-bottom: 1.5rem; }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        select, button {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s, background 0.2s;
+        }
+
+        button:hover { background-color: #1d4ed8; }
+        button:active { transform: scale(0.98); }
+
+        #word-display {
+            margin-top: 2rem;
+            padding: 2rem;
+            border: 3px dashed #cbd5e1;
+            border-radius: 12px;
+            min-height: 50px;
+        }
+
+        .word {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        .status {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Taboo!</h1>
+    
+    <div class="controls">
+        <select id="category">
+            <option value="faculty">Faculty</option>
+            <option value="malaysia">Malaysia</option>
+            <option value="others">Others</option>
+        </select>
+
+        <select id="type">
+            <option value="noun">Noun</option>
+            <option value="adjective">Adjective</option>
+        </select>
+
+        <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+
+        <button onclick="drawWord()">DRAW WORD</button>
+    </div>
+
+    <div id="word-display">
+        <div id="current-word" class="word">READY?</div>
+        <div id="count-status" class="status">Select options and press Draw</div>
+    </div>
+</div>
+
+<script>
+    // 1. The Master Data
+    const tabooData = {
+        faculty: {
+            noun: {
+                easy: ["Lecture", "Exam", "Library", "Student", "Paper"],
+                medium: ["Dean", "Syllabus", "Lab", "Campus", "Grant"],
+                hard: ["Accreditation", "Thesis", "Pedagogy", "Tenure", "Curriculum"]
+            },
+            adjective: {
+                easy: ["Smart", "Studious", "Late"],
+                medium: ["Academic", "Rigorous", "Diligent"],
+                hard: ["Interdisciplinary", "Plagiarized", "Methodological"]
+            }
+        },
+        malaysia: {
+            noun: {
+                easy: ["Nasi Lemak", "Durian", "KLCC", "Proton", "Pasar Malam"],
+                medium: ["Rattan", "Hibiscus", "Mat Rempit", "Rengat", "Sate"],
+                hard: ["Monarchy", "Biodiversity", "Federalism", "Istana Negara"]
+            },
+            adjective: {
+                easy: ["Pedas", "Panas", "Manis"],
+                medium: ["Muhibbah", "Rojak", "Merdeka"],
+                hard: ["Archipelagic", "Tropical", "Multi-ethnic"]
+            }
+        },
+        others: {
+            noun: { easy: ["Apple", "Car"], medium: ["Laptop"], hard: ["Entropy"] },
+            adjective: { easy: ["Red", "Big"], medium: ["Gloomy"], hard: ["Ephemeral"] }
+        }
+    };
+
+    // 2. The "Decks" - This stores words that haven't been used yet
+    let availableWords = [];
+
+    function drawWord() {
+        const cat = document.getElementById('category').value;
+        const type = document.getElementById('type').value;
+        const diff = document.getElementById('difficulty').value;
+
+        // If the pool is empty or user changed settings, refill the pool
+        if (availableWords.length === 0) {
+            // We use the spread operator [...] to copy the array so we don't destroy the original data
+            availableWords = [...tabooData[cat][type][diff]];
+        }
+
+        // Logic to check if user switched categories mid-game
+        // (Simplified for this version: it draws from the current selection)
+        
+        if (availableWords.length > 0) {
+            // Generate random index
+            const randomIndex = Math.floor(Math.random() * availableWords.length);
+            
+            // Remove the word from the temporary deck so it can't be picked again
+            const pickedWord = availableWords.splice(randomIndex, 1);
+            
+            // Update UI
+            document.getElementById('current-word').innerText = pickedWord[0];
+            document.getElementById('count-status').innerText = `Words left in this set: ${availableWords.length}`;
+        } else {
+            document.getElementById('current-word').innerText = "FINISH!";
+            document.getElementById('count-status').innerText = "All words used. Click again to restart.";
+        }
+    }
+
+    // Optional: Reset the deck whenever a dropdown changes
+    document.querySelectorAll('select').forEach(select => {
+        select.addEventListener('change', () => {
+            availableWords = []; // Clears current deck so new category loads on next click
+            document.getElementById('count-status').innerText = "Settings changed. Deck reset.";
+        });
+    });
+</script>
+
+</body>
+</html>
